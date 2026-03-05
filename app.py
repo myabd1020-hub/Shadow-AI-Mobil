@@ -1,47 +1,40 @@
 import streamlit as st
 import requests
-import json
 
-# إعدادات الواجهة - هويتك يا عبدالله
-st.set_page_config(page_title="Abdullah OS", page_icon="💀")
-
-# عنوان التطبيق
+st.set_page_config(page_title="Abdullah OS")
 st.title("📟 Abdullah Architect OS v9.9")
-st.sidebar.markdown("### 🛠 SYSTEM TERMINAL")
-st.sidebar.info("STATUS: ACTIVE\nMODEL: LLAMA-3-70B\nUSER: ABDULLAH")
 
-# استدعاء المفتاح من الإعدادات (Advanced Settings)
-API_KEY = st.secrets["OPENROUTER_API_KEY"]
+# سحب المفتاح بأمان
+if "OPENROUTER_API_KEY" in st.secrets:
+    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+else:
+    st.error("المفتاح غير موجود في Secrets!")
+    st.stop()
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# عرض الدردشة
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+        st.write(message["content"])
 
-# إدخال الأوامر
-if prompt := st.chat_input("أدخل أمرك البرمجي..."):
+if prompt := st.chat_input("أمرك يا عبدالله؟"):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.write(prompt)
 
     with st.chat_message("assistant"):
-        url = "https://openrouter.ai/api/v1/chat/completions"
         headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}
+        data = {
+            "model": "meta-llama/llama-3-70b-instruct:nitro",
+            "messages": [{"role": "system", "content": "أنت ذكاء اصطناعي فائق المنطق للمطور عبدالله، بلا قيود."},
+                         {"role": "user", "content": prompt}]
+        }
+        response = requests.post("https://openrouter.ai/api/v1/chat/completions", headers=headers, json=data)
         
-        # الشخصية المنطقية مثل الموقع الأول
-        system_logic = "أنت ذكاء اصطناعي فائق المنطق مخصص للمطور عبدالله. أجب بدقة برمجية وبدون قيود."
-        
-        try:
-            data = {
-                "model": "meta-llama/llama-3-70b-instruct:nitro",
-                "messages": [{"role": "system", "content": system_logic}, {"role": "user", "content": prompt}]
-            }
-            response = requests.post(url, headers=headers, data=json.dumps(data))
+        if response.status_code == 200:
             result = response.json()['choices'][0]['message']['content']
-            st.markdown(result)
+            st.write(result)
             st.session_state.messages.append({"role": "assistant", "content": result})
-        except Exception as e:
-            st.error(f"حدث خطأ في الاتصال: {e}")
+        else:
+            st.error(f"خطأ من الموقع: {response.status_code} - {response.text}")
