@@ -1,0 +1,16 @@
+[app]
+title = Abdullah Architect OS
+package.name = abdullah_os
+package.domain = org.abdullah
+source.dir = .
+source.include_exts = py,png,jpg,kv,atlas
+version = 9.9
+requirements = python3,kivy,requests,certifi,charset-normalizer,idna,urllib3
+
+orientation = portrait
+fullscreen = 1
+android.arch = arm64-v8a
+android.permissions = INTERNET
+
+# أيقونة التطبيق (يمكنك تغييرها لاحقاً)
+icon.filename = %(source.dir)s/icon.png
